@@ -1,8 +1,8 @@
 const path=require('path');
-const ExtractText=require('extract-text-webpack-plugin');
+const MiniPlugin=require('mini-css-extract-plugin');
 const HtmlWebpackPlugin=require('html-webpack-plugin');
 module.exports={
-    entry:'./src/index.js',
+    entry:'./js/index.js',
     output:{
         filename:'js/[name].[hash:8].js',
         path:path.resolve(__dirname,'dist'),
@@ -10,24 +10,28 @@ module.exports={
     },
     mode:'production',
     devServer:{
-        contentBase:'./view'
+        contentBase:'./dist/view'
     },
     module:{
         rules:[
             {
                 test:/\.css$/,
-                use:ExtractText.extract({
-                    fallback:'style-loader',
-                    use:'css-loader',
-                    publicPath:"css"
-                })
+                use:[
+                    {
+                        loader:MiniPlugin.loader,
+                        options:{
+                            publicPath:'css/'
+                        }
+                    },
+                    'css-loader'
+                ]
             }
         ]
     },
     plugins:[
-        new ExtractText({
-            filename:path.posix.join('src','css/[name].[contenthash].css'),
-            allChunks:true
+        new MiniPlugin({
+            filename:'css/[name].css',
+            chunkFilename:'[id].css'
         }),
         new HtmlWebpackPlugin({
             title:'index',
@@ -35,7 +39,7 @@ module.exports={
             filename:'view/index.html',
             template:'view/index.html',
             hash:true,
-            chunks:['/src/index.js']
+            chunks:['/js/index.js']
         })
     ]
 }
